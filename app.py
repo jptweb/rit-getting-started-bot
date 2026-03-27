@@ -6,7 +6,7 @@ import os
 # Page configuration
 st.set_page_config(
     page_title="RIT Getting Started Assistant",
-    page_icon="🐯",
+    page_icon="📖",
     layout="centered"
 )
 
@@ -96,7 +96,7 @@ if "conversation_count" not in st.session_state:
     st.session_state.conversation_count = 0
 
 # Header
-st.title("🐯 RIT Getting Started Assistant")
+st.title("RIT Getting Started Assistant")
 st.markdown("*Your guide to navigating RIT — policies, procedures, resources, and more*")
 
 # Sidebar
@@ -154,12 +154,16 @@ if prompt := st.chat_input("Ask about RIT policies, procedures, resources..."):
                         "content": msg["content"]
                     })
 
-                # Get response from Claude
+                # Get response from Claude (with prompt caching for the knowledge base)
                 response = client.messages.create(
                     model="claude-3-haiku-20240307",
                     max_tokens=2000,
                     temperature=0.3,
-                    system=get_system_prompt(),
+                    system=[{
+                        "type": "text",
+                        "text": get_system_prompt(),
+                        "cache_control": {"type": "ephemeral"}
+                    }],
                     messages=api_messages
                 )
 
@@ -179,4 +183,4 @@ if prompt := st.chat_input("Ask about RIT policies, procedures, resources..."):
 
 # Footer
 st.divider()
-st.caption("🐯 Based on the unofficial RIT Getting Started guide. Always verify critical details with official RIT sources.")
+st.caption("Based on the unofficial RIT Getting Started guide. Always verify critical details with official RIT sources.")

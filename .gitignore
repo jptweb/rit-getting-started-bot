@@ -23,6 +23,9 @@ venv.bak/
 *~
 .DS_Store
 
+# Internal docs (not for public repo)
+internal-docs.md
+
 # Environment variables
 .env
 .env.local

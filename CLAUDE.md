@@ -12,7 +12,8 @@ This is a **proof of concept** to demonstrate an integrated, AI-powered knowledg
 ### Files Structure
 ```
 rit-getting-started-bot/
-├── app.py                                    # Main RIT knowledge bot
+├── app.py                                    # Main bot — section-based retrieval (CURRENT)
+├── app_full_knowledge_base.py                # Backup — sends full 43K knowledge base every request
 ├── app_teaching_assistant.py                 # Legacy backup (from original project)
 ├── knowledge_rit-gettings-started-2251.md    # RIT Getting Started knowledge base (primary)
 ├── knowledge_base.txt                        # Legacy (from original project)
@@ -25,12 +26,30 @@ rit-getting-started-bot/
     └── secrets.toml.example                  # Template for others
 ```
 
+### App Versions
+
+**`app.py` (current) — Section-based retrieval:**
+- Parses the knowledge base into ~100 sections by `#` headings at startup
+- For each question, scores sections by keyword overlap (title matches weighted 3x)
+- Sends only the top 5 most relevant sections to Claude (~2-5K tokens instead of 43K)
+- Includes a "Sections referenced" expander under each answer for transparency
+- ~10x cheaper per request than the full version
+- Trade-off: may miss relevant info if keywords don't overlap well with vague questions
+
+**`app_full_knowledge_base.py` — Full knowledge base:**
+- Sends the entire 43K token knowledge base in the system prompt every request
+- More thorough — Claude sees everything, so it won't miss relevant info
+- More expensive (~$0.01-0.02 per question vs ~$0.001-0.002 for section-based)
+- Uses Anthropic prompt caching (90% discount on follow-up questions in same session)
+- To revert: `cp app_full_knowledge_base.py app.py`
+
 ### Current Configuration
 - **Model**: Claude Haiku 3 (`claude-3-haiku-20240307`) — cheapest option; upgrade when API key permissions allow
 - **Max Tokens**: 2000
 - **Temperature**: 0.3 (low — factual responses preferred)
 - **Focus**: RIT-wide knowledge for faculty/staff (onboarding, policies, resources, procedures)
-- **Knowledge Base**: `knowledge_rit-gettings-started-2251.md` (~43K tokens covering 60+ RIT topics)
+- **Knowledge Base**: `knowledge_rit-gettings-started-2251.md` (~43K tokens, ~100 sections covering 60+ RIT topics)
+- **Retrieval**: Section-based keyword matching (top 5 sections per question)
 
 ### Guardrails / Rules
 The system prompt includes strict rules that:
@@ -94,9 +113,20 @@ streamlit run app.py --server.headless true
 - "Write me a Python script"
 
 ## Cost Analysis
-- **Haiku 3**: ~$0.25 per million input tokens, $1.25 per million output
-- Knowledge base is ~43K tokens per request (included in system prompt)
-- Estimated cost per question: ~$0.01-0.02
+
+Section-based retrieval is significantly cheaper than full mode. Both modes support Anthropic prompt caching for follow-up questions. Detailed cost measurements, projections at scale, and pitch notes are in **`internal-docs.md`** (gitignored — not in the public repo).
+
+Key points:
+- Section-based mode is ~13x cheaper per question than full mode
+- Prompt caching gives ~12x discount on follow-ups within a 5-min window
+- Full mode is more prone to hallucination; section-based is more grounded
+- Section-based keyword matching can miss sections on vague queries
+- **Important**: The knowledge base headings (`#` sections) are critical to the section-based retrieval. Editors should maintain clear, descriptive headings.
+
+### URL Mode Switching
+Both modes run from a single `app.py` controlled by URL query parameter:
+- Default (full knowledge base): `your-app-url.streamlit.app`
+- Section-based: `your-app-url.streamlit.app/?mode=sections`
 
 ## Future Vision
 
@@ -104,18 +134,24 @@ streamlit run app.py --server.headless true
    - Load knowledge bases ad hoc instead of hardcoding one
    - Support multiple knowledge sources (markdown files, URLs, etc.)
    - Make this a reusable tool rather than a single-use app
+   - AI-assisted editing: users describe what to add/change and the AI places it in the right section
 
-2. **Broader RIT Knowledge**:
+2. **Better Retrieval**:
+   - Embeddings + vector search (RAG) for more accurate section matching
+   - Two-pass approach: first identify relevant sections, then answer
+   - Would require a vector DB (ChromaDB, FAISS, Pinecone) — more complexity but better accuracy
+
+3. **Broader RIT Knowledge**:
    - Add more knowledge sources beyond Getting Started
    - Course-specific modules that can be loaded on demand
    - Integration with existing RIT systems
 
-3. **Workflow Integration**:
+4. **Workflow Integration**:
    - Slack bot deployment
    - Embed in RIT portals
    - API endpoint for other tools to call
 
-4. **Usage Analytics**:
+5. **Usage Analytics**:
    - Track common questions to improve the knowledge base
    - Identify gaps in documentation
 

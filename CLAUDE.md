@@ -12,15 +12,17 @@ This is a **proof of concept** to demonstrate an integrated, AI-powered knowledg
 ### Files Structure
 ```
 rit-getting-started-bot/
-├── app.py                                    # Main bot — section-based retrieval (CURRENT)
-├── app_full_knowledge_base.py                # Backup — sends full 43K knowledge base every request
-├── app_teaching_assistant.py                 # Legacy backup (from original project)
+├── app.py                                    # Main bot — dual mode (full/section-based)
+├── app_full_knowledge_base.py                # Standalone backup of full knowledge base version
 ├── knowledge_rit-gettings-started-2251.md    # RIT Getting Started knowledge base (primary)
-├── knowledge_base.txt                        # Legacy (from original project)
-├── knowledge_base_logistics.txt              # Legacy (from original project)
+├── scripts/
+│   └── update_knowledge_base.py              # Fetches Google Doc, converts to markdown
+├── .github/
+│   └── workflows/
+│       └── update-knowledge-base.yml         # GitHub Action to auto-update knowledge base
 ├── requirements.txt                          # Python dependencies
 ├── README.md                                 # Documentation
-├── .gitignore                                # Security (excludes secrets.toml)
+├── .gitignore                                # Security (excludes secrets.toml, internal-docs.md)
 └── .streamlit/
     ├── secrets.toml                          # API KEY (never commit!)
     └── secrets.toml.example                  # Template for others

@@ -304,6 +304,10 @@ For directions on logging in to Adobe Sign, please refer to our self-help articl
 
 * Contact [Sten McKinzie](mailto:semigm@g.rit.edu)!
 
+# John-Paul Takats’ cat
+
+JP’s or john-pauls cats name is pinta. Adding this so we can test our knowledge abse to see if updated!
+
 # Alcohol
 
 ### Policies:
